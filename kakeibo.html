@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="家計簿">
+<title>🌸 家計簿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #fdf6f0; }
+  body { font-family: 'Noto Sans JP', sans-serif; color: #3d3535; -webkit-tap-highlight-color: transparent; }
+  input, select, button, textarea { font-family: inherit; }
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  #app { min-height: 100vh; padding-bottom: 40px; }
+
+  .header {
+    background: linear-gradient(135deg, #eacece 0%, #c4dac0 100%);
+    padding: 52px 20px 20px;
+    border-bottom: 1px solid #ddc8c8;
+  }
+  .title { font-size: 22px; font-weight: 900; letter-spacing: 2px; color: #8a4f4f; }
+  .subtitle { font-size: 12px; color: #a88080; margin-top: 4px; }
+  .nav { display: flex; gap: 8px; margin-top: 16px; }
+  .nav-btn {
+    flex: 1; padding: 10px 0; border-radius: 10px; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 700;
+    background: rgba(255,255,255,0.5); color: #9a7070;
+    transition: all 0.2s;
+  }
+  .nav-btn.active { background: #c47e7e; color: #fff; }
+
+  .content { padding: 20px 16px; max-width: 480px; margin: 0 auto; }
+  .card {
+    background: #fff; border-radius: 18px; padding: 20px; margin-bottom: 16px;
+    border: 1px solid #f0dada;
+    box-shadow: 0 2px 12px rgba(196,126,126,0.07);
+  }
+  .section-title { font-size: 14px; font-weight: 700; color: #c47e7e; margin-bottom: 16px; letter-spacing: 1px; }
+
+  .form-row { margin-bottom: 14px; }
+  .form-label { font-size: 11px; color: #b09090; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; display: block; }
+  .form-input {
+    width: 100%; background: #fdf8f8; border: 1.5px solid #e8d0d0;
+    border-radius: 10px; padding: 12px 14px; color: #3d3535; font-size: 15px; outline: none;
+  }
+  .form-input:focus { border-color: #c47e7e; }
+  select.form-input { appearance: none; -webkit-appearance: none; }
+  .add-btn {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, #c47e7e 0%, #a8c4a8 100%);
+    border-radius: 12px; border: none; color: #fff;
+    font-size: 16px; font-weight: 800; cursor: pointer; letter-spacing: 1px; margin-top: 4px;
+  }
+  .add-btn:active { opacity: 0.85; transform: scale(0.98); }
+
+  .success {
+    background: #edf7ed; border: 1px solid #a8c4a8;
+    border-radius: 10px; padding: 10px 16px; color: #5c8a5c;
+    font-size: 13px; text-align: center; margin-bottom: 12px; display: none;
+  }
+  .success.show { display: block; }
+
+  /* THEME CHIPS */
+  .theme-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .theme-chip {
+    padding: 6px 14px; border-radius: 20px; border: 1.5px solid #e8d0d0;
+    background: #fdf8f8; color: #9a7070; font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .theme-chip.selected { background: #c47e7e; border-color: #c47e7e; color: #fff; }
+  .theme-custom-wrap { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
+  .theme-custom-input {
+    flex: 1; background: #fdf8f8; border: 1.5px solid #e8d0d0;
+    border-radius: 10px; padding: 9px 12px; color: #3d3535; font-size: 14px; outline: none;
+  }
+  .theme-custom-input:focus { border-color: #c47e7e; }
+  .theme-custom-btn {
+    padding: 9px 14px; background: #f0e4e4; border: none; border-radius: 10px;
+    color: #c47e7e; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;
+  }
+
+  /* MONTH NAV */
+  .ym-row { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+  .ym-btn {
+    background: #fbeaea; border: none; color: #c47e7e;
+    border-radius: 8px; padding: 8px 16px; cursor: pointer; font-size: 18px; font-weight: 700;
+  }
+  .ym-label { flex: 1; text-align: center; font-weight: 800; font-size: 15px; color: #5a4040; }
+
+  /* DATE GROUP */
+  .date-group { margin-bottom: 16px; }
+  .date-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .date-label { font-size: 12px; color: #b09090; }
+  .theme-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+    background: #fbeaea; color: #c47e7e;
+    border: 1px solid #f0d0d0; cursor: pointer;
+  }
+  .theme-tag .edit-icon { font-size: 10px; opacity: 0.6; }
+
+  .entry-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 0; border-bottom: 1px solid #f7eeee;
+    cursor: pointer;
+  }
+  .entry-row:active { background: #fdf5f5; border-radius: 8px; }
+  .cat-badge { border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+  .entry-memo { font-size: 12px; color: #b09090; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .entry-amount { font-weight: 800; font-size: 15px; color: #5a4040; white-space: nowrap; flex-shrink: 0; }
+  .edit-btn { background: none; border: none; color: #c4a8a8; cursor: pointer; font-size: 14px; padding: 0 2px; flex-shrink: 0; }
+  .del-btn { background: none; border: none; color: #d4b0b0; cursor: pointer; font-size: 15px; padding: 0 2px; flex-shrink: 0; }
+  .del-btn:active { color: #c47e7e; }
+  .empty { text-align: center; color: #c8b0b0; font-size: 13px; padding: 28px 0; }
+
+  /* MODALS */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(60,30,30,0.35);
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: #fff; border-radius: 24px 24px 0 0; padding: 24px 20px 44px;
+    width: 100%; max-width: 480px;
+    transform: translateY(100%); transition: transform 0.25s ease;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-title { font-size: 15px; font-weight: 800; color: #8a4f4f; margin-bottom: 16px; }
+
+  /* THEME MODAL */
+  .modal-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .modal-chip {
+    padding: 8px 16px; border-radius: 20px; border: 1.5px solid #e8d0d0;
+    background: #fdf8f8; color: #9a7070; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .modal-chip.selected { background: #c47e7e; border-color: #c47e7e; color: #fff; }
+  .modal-custom-row { display: flex; gap: 8px; }
+  .modal-custom-input {
+    flex: 1; background: #fdf8f8; border: 1.5px solid #e8d0d0;
+    border-radius: 10px; padding: 10px 14px; color: #3d3535; font-size: 14px; outline: none;
+  }
+  .modal-custom-input:focus { border-color: #c47e7e; }
+  .modal-save-btn {
+    padding: 10px 18px; background: #c47e7e; border: none; border-radius: 10px;
+    color: #fff; font-size: 14px; font-weight: 800; cursor: pointer;
+  }
+  .modal-clear-btn {
+    width: 100%; margin-top: 10px; padding: 10px; background: #fbeaea;
+    border: none; border-radius: 10px; color: #c47e7e;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+
+  /* EDIT ENTRY MODAL */
+  .edit-modal-form .form-row { margin-bottom: 12px; }
+  .edit-modal-btns { display: flex; gap: 10px; margin-top: 16px; }
+  .edit-save-btn {
+    flex: 1; padding: 13px; background: linear-gradient(135deg, #c47e7e, #a8c4a8);
+    border: none; border-radius: 12px; color: #fff; font-size: 15px; font-weight: 800; cursor: pointer;
+  }
+  .edit-cancel-btn {
+    padding: 13px 18px; background: #f5eaea; border: none; border-radius: 12px;
+    color: #b09090; font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .edit-delete-btn {
+    width: 100%; margin-top: 8px; padding: 12px; background: none;
+    border: 1.5px solid #f0d0d0; border-radius: 12px;
+    color: #c47e7e; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+
+  /* TOTALS */
+  .total-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f0dada; padding-top: 12px; margin-top: 8px; }
+  .total-label { font-size: 14px; color: #b09090; }
+  .total-amt { font-size: 20px; font-weight: 900; color: #c47e7e; }
+
+  .pie-wrap { display: flex; justify-content: center; margin-bottom: 20px; }
+
+  .legend-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .legend-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+  .legend-label { font-size: 13px; color: #6a5050; flex: 1; }
+  .legend-amt { font-size: 13px; font-weight: 800; color: #3d3535; }
+  .legend-pct { font-size: 11px; color: #c4a0a0; margin-left: 4px; min-width: 34px; text-align: right; }
+
+  .month-bar-row { margin-bottom: 10px; }
+  .month-bar-head { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .month-bar-name { font-size: 12px; color: #b09090; }
+  .month-bar-amt { font-size: 12px; font-weight: 700; }
+  .month-bar-track { height: 5px; background: #f5eaea; border-radius: 4px; overflow: hidden; }
+  .month-bar-fill { height: 100%; background: linear-gradient(90deg, #c47e7e, #a8c4a8); border-radius: 4px; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="title">🌸 家計簿</div>
+    <div class="subtitle">My Personal Finance</div>
+    <div class="nav">
+      <button class="nav-btn active" onclick="switchView('input')">入力・記録</button>
+      <button class="nav-btn" onclick="switchView('monthly')">月次集計</button>
+      <button class="nav-btn" onclick="switchView('yearly')">年次集計</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- INPUT VIEW -->
+    <div id="view-input" class="view active">
+      <div class="card">
+        <div class="section-title">新しい支出を追加</div>
+        <div class="success" id="success-msg">✅ 追加しました！</div>
+        <div class="form-row">
+          <label class="form-label">日付</label>
+          <input type="date" class="form-input" id="f-date" onchange="onDateChange()">
+        </div>
+        <div class="form-row">
+          <label class="form-label">その日のテーマ（任意）</label>
+          <div class="theme-chips" id="form-theme-chips"></div>
+          <div class="theme-custom-wrap">
+            <input type="text" class="theme-custom-input" id="f-theme-custom" placeholder="自由入力…" maxlength="20">
+            <button class="theme-custom-btn" onclick="applyCustomTheme()">決定</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">カテゴリ</label>
+          <select class="form-input" id="f-cat">
+            <option value="food">🍱 食費</option>
+            <option value="transport">🚃 交通費</option>
+            <option value="utility">💡 光熱費</option>
+            <option value="entertainment">🎮 娯楽</option>
+            <option value="health">💊 医療・美容</option>
+            <option value="clothing">👗 衣類</option>
+            <option value="daily">🛒 日用品</option>
+            <option value="other">📦 その他</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label">金額（円）</label>
+          <input type="number" class="form-input" id="f-amount" placeholder="例: 1500" inputmode="numeric">
+        </div>
+        <div class="form-row">
+          <label class="form-label">メモ（任意）</label>
+          <input type="text" class="form-input" id="f-memo" placeholder="例: コンビニ">
+        </div>
+        <button class="add-btn" onclick="addEntry()">＋ 追加する</button>
+      </div>
+
+      <div class="card">
+        <div class="ym-row">
+          <button class="ym-btn" onclick="prevMonth()">‹</button>
+          <span class="ym-label" id="input-ym-label"></span>
+          <button class="ym-btn" onclick="nextMonth()">›</button>
+        </div>
+        <div id="entry-list"></div>
+        <div class="total-row" id="input-total-row" style="display:none">
+          <span class="total-label">月合計</span>
+          <span class="total-amt" id="input-total-amt"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MONTHLY VIEW -->
+    <div id="view-monthly" class="view">
+      <div class="card">
+        <div class="ym-row">
+          <button class="ym-btn" onclick="prevMonth()">‹</button>
+          <span class="ym-label" id="monthly-ym-label"></span>
+          <button class="ym-btn" onclick="nextMonth()">›</button>
+        </div>
+        <div class="pie-wrap"><canvas id="monthly-pie" style="display:block"></canvas></div>
+        <div id="monthly-legend"></div>
+        <div class="total-row" id="monthly-total-row" style="display:none">
+          <span class="total-label">月合計</span>
+          <span class="total-amt" id="monthly-total-amt"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- YEARLY VIEW -->
+    <div id="view-yearly" class="view">
+      <div class="card">
+        <div class="ym-row">
+          <button class="ym-btn" onclick="prevYear()">‹</button>
+          <span class="ym-label" id="yearly-y-label"></span>
+          <button class="ym-btn" onclick="nextYear()">›</button>
+        </div>
+        <div class="pie-wrap"><canvas id="yearly-pie" style="display:block"></canvas></div>
+        <div id="yearly-legend"></div>
+        <div class="total-row" id="yearly-total-row" style="display:none">
+          <span class="total-label" id="yearly-total-label"></span>
+          <span class="total-amt" id="yearly-total-amt"></span>
+        </div>
+      </div>
+      <div class="card" id="yearly-months-card" style="display:none">
+        <div class="section-title">月別内訳</div>
+        <div id="yearly-months"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- テーマ編集モーダル -->
+<div class="modal-overlay" id="theme-modal" onclick="closeThemeModal(event)">
+  <div class="modal">
+    <div class="modal-title">📅 テーマを変更</div>
+    <div class="modal-chips" id="modal-chips"></div>
+    <div class="modal-custom-row">
+      <input type="text" class="modal-custom-input" id="modal-custom-input" placeholder="自由入力…" maxlength="20">
+      <button class="modal-save-btn" onclick="saveModalTheme()">保存</button>
+    </div>
+    <button class="modal-clear-btn" onclick="clearModalTheme()">テーマをなしにする</button>
+  </div>
+</div>
+
+<!-- 支出編集モーダル -->
+<div class="modal-overlay" id="edit-modal" onclick="closeEditModal(event)">
+  <div class="modal">
+    <div class="modal-title">✏️ 支出を編集</div>
+    <div class="edit-modal-form">
+      <div class="form-row">
+        <label class="form-label">日付</label>
+        <input type="date" class="form-input" id="edit-date">
+      </div>
+      <div class="form-row">
+        <label class="form-label">カテゴリ</label>
+        <select class="form-input" id="edit-cat">
+          <option value="food">🍱 食費</option>
+          <option value="transport">🚃 交通費</option>
+          <option value="utility">💡 光熱費</option>
+          <option value="entertainment">🎮 娯楽</option>
+          <option value="health">💊 医療・美容</option>
+          <option value="clothing">👗 衣類</option>
+          <option value="daily">🛒 日用品</option>
+          <option value="other">📦 その他</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">金額（円）</label>
+        <input type="number" class="form-input" id="edit-amount" inputmode="numeric">
+      </div>
+      <div class="form-row">
+        <label class="form-label">メモ（任意）</label>
+        <input type="text" class="form-input" id="edit-memo">
+      </div>
+      <div class="edit-modal-btns">
+        <button class="edit-cancel-btn" onclick="closeEditModal()">キャンセル</button>
+        <button class="edit-save-btn" onclick="saveEdit()">保存する</button>
+      </div>
+      <button class="edit-delete-btn" onclick="deleteFromEdit()">🗑 この支出を削除する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATEGORIES = [
+  { id: "food",          label: "🍱 食費",       color: "#d4887c" },
+  { id: "transport",     label: "🚃 交通費",     color: "#88b09c" },
+  { id: "utility",       label: "💡 光熱費",     color: "#c8a87a" },
+  { id: "entertainment", label: "🎮 娯楽",       color: "#a888b4" },
+  { id: "health",        label: "💊 医療・美容",  color: "#cc9aaa" },
+  { id: "clothing",      label: "👗 衣類",       color: "#7aaa8c" },
+  { id: "daily",         label: "🛒 日用品",     color: "#c49898" },
+  { id: "other",         label: "📦 その他",     color: "#9aacb8" },
+];
+const PRESET_THEMES = [
+  { label: "✈️ 旅行", value: "旅行" },
+  { label: "🏖️ 旅行（国外）", value: "旅行（国外）" },
+  { label: "😴 お休み", value: "お休み" },
+  { label: "💼 仕事", value: "仕事" },
+  { label: "🏠 在宅", value: "在宅" },
+  { label: "🎉 イベント", value: "イベント" },
+  { label: "🏥 通院", value: "通院" },
+  { label: "🛍️ お買い物", value: "お買い物" },
+];
+const MONTHS_JP = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+
+const today = new Date();
+let selYear  = today.getFullYear();
+let selMonth = today.getMonth();
+let formSelectedTheme = "";
+let modalTargetDate = "";
+let editingId = null; // 編集中の支出ID
+
+// ---- Storage ----
+function loadEntries() { try { return JSON.parse(localStorage.getItem("kakeibo_entries")||"[]"); } catch{return[];} }
+function saveEntries(arr) { localStorage.setItem("kakeibo_entries", JSON.stringify(arr)); }
+function loadThemes() { try { return JSON.parse(localStorage.getItem("kakeibo_themes")||"{}"); } catch{return{};} }
+function saveThemes(obj) { localStorage.setItem("kakeibo_themes", JSON.stringify(obj)); }
+function getCat(id) { return CATEGORIES.find(c=>c.id===id)||{label:id,color:"#aaa"}; }
+function fmtDate(str) {
+  return new Date(str+"T00:00:00").toLocaleDateString("ja-JP",{month:"long",day:"numeric",weekday:"short"});
+}
+
+// ---- Init ----
+const initDate = today.toISOString().split("T")[0];
+document.getElementById("f-date").value = initDate;
+renderFormThemeChips(initDate);
+
+function onDateChange() {
+  const d = document.getElementById("f-date").value;
+  const themes = loadThemes();
+  formSelectedTheme = themes[d] || "";
+  renderFormThemeChips(d);
+}
+
+function renderFormThemeChips(date) {
+  const themes = loadThemes();
+  const current = themes[date] || formSelectedTheme;
+  document.getElementById("form-theme-chips").innerHTML = PRESET_THEMES.map(t =>
+    `<button class="theme-chip ${current===t.value?'selected':''}" onclick="selectFormTheme('${t.value}')">${t.label}</button>`
+  ).join("");
+  const isPreset = PRESET_THEMES.some(t=>t.value===current);
+  document.getElementById("f-theme-custom").value = (!isPreset && current) ? current : "";
+}
+
+function selectFormTheme(val) {
+  const date = document.getElementById("f-date").value;
+  formSelectedTheme = formSelectedTheme===val ? "" : val;
+  const themes = loadThemes();
+  if (formSelectedTheme) themes[date]=formSelectedTheme; else delete themes[date];
+  saveThemes(themes);
+  document.getElementById("f-theme-custom").value="";
+  renderFormThemeChips(date);
+  render();
+}
+
+function applyCustomTheme() {
+  const val = document.getElementById("f-theme-custom").value.trim();
+  if (!val) return;
+  const date = document.getElementById("f-date").value;
+  formSelectedTheme = val;
+  const themes = loadThemes();
+  themes[date] = val;
+  saveThemes(themes);
+  renderFormThemeChips(date);
+  render();
+}
+
+// ---- View ----
+function switchView(v) {
+  document.querySelectorAll(".view").forEach(el=>el.classList.remove("active"));
+  document.getElementById("view-"+v).classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach((btn,i)=>btn.classList.toggle("active",["input","monthly","yearly"][i]===v));
+  render();
+}
+function prevMonth() { if(selMonth===0){selYear--;selMonth=11;}else selMonth--; render(); }
+function nextMonth() { if(selMonth===11){selYear++;selMonth=0;}else selMonth++; render(); }
+function prevYear() { selYear--; render(); }
+function nextYear() { selYear++; render(); }
+
+// ---- Add ----
+function addEntry() {
+  const date   = document.getElementById("f-date").value;
+  const cat    = document.getElementById("f-cat").value;
+  const amount = parseFloat(document.getElementById("f-amount").value);
+  const memo   = document.getElementById("f-memo").value.trim();
+  if (!date||isNaN(amount)||amount<=0) return;
+  const entries = loadEntries();
+  entries.unshift({id:Date.now(),date,category:cat,amount,memo});
+  saveEntries(entries);
+  document.getElementById("f-amount").value="";
+  document.getElementById("f-memo").value="";
+  const s=document.getElementById("success-msg");
+  s.classList.add("show");
+  setTimeout(()=>s.classList.remove("show"),2000);
+  render();
+}
+
+// ---- Edit Entry Modal ----
+function openEditModal(id) {
+  const entry = loadEntries().find(e=>e.id===id);
+  if (!entry) return;
+  editingId = id;
+  document.getElementById("edit-date").value   = entry.date;
+  document.getElementById("edit-cat").value    = entry.category;
+  document.getElementById("edit-amount").value = entry.amount;
+  document.getElementById("edit-memo").value   = entry.memo || "";
+  document.getElementById("edit-modal").classList.add("open");
+}
+
+function closeEditModal(e) {
+  if (e && e.target !== document.getElementById("edit-modal")) return;
+  document.getElementById("edit-modal").classList.remove("open");
+  editingId = null;
+}
+
+function saveEdit() {
+  const date   = document.getElementById("edit-date").value;
+  const cat    = document.getElementById("edit-cat").value;
+  const amount = parseFloat(document.getElementById("edit-amount").value);
+  const memo   = document.getElementById("edit-memo").value.trim();
+  if (!date||isNaN(amount)||amount<=0) return;
+  const entries = loadEntries().map(e =>
+    e.id===editingId ? {...e, date, category:cat, amount, memo} : e
+  );
+  saveEntries(entries);
+  document.getElementById("edit-modal").classList.remove("open");
+  editingId = null;
+  render();
+}
+
+function deleteFromEdit() {
+  if (!editingId) return;
+  if (!confirm("この支出を削除しますか？")) return;
+  saveEntries(loadEntries().filter(e=>e.id!==editingId));
+  document.getElementById("edit-modal").classList.remove("open");
+  editingId = null;
+  render();
+}
+
+// ---- Theme Modal ----
+function openThemeModal(date) {
+  modalTargetDate = date;
+  const themes = loadThemes();
+  const current = themes[date]||"";
+  const isPreset = PRESET_THEMES.some(t=>t.value===current);
+  document.getElementById("modal-chips").innerHTML = PRESET_THEMES.map(t =>
+    `<button class="modal-chip ${current===t.value?'selected':''}" onclick="selectModalChip('${t.value}')">${t.label}</button>`
+  ).join("");
+  document.getElementById("modal-custom-input").value = (!isPreset&&current)?current:"";
+  document.getElementById("theme-modal").classList.add("open");
+}
+function closeThemeModal(e) {
+  if (e&&e.target!==document.getElementById("theme-modal")) return;
+  document.getElementById("theme-modal").classList.remove("open");
+}
+function selectModalChip(val) {
+  const themes=loadThemes();
+  const current=themes[modalTargetDate]||"";
+  if(current===val) delete themes[modalTargetDate]; else themes[modalTargetDate]=val;
+  saveThemes(themes);
+  document.getElementById("theme-modal").classList.remove("open");
+  if(modalTargetDate===document.getElementById("f-date").value){formSelectedTheme=themes[modalTargetDate]||"";renderFormThemeChips(modalTargetDate);}
+  render();
+}
+function saveModalTheme() {
+  const val=document.getElementById("modal-custom-input").value.trim();
+  const themes=loadThemes();
+  if(val) themes[modalTargetDate]=val; else delete themes[modalTargetDate];
+  saveThemes(themes);
+  document.getElementById("theme-modal").classList.remove("open");
+  if(modalTargetDate===document.getElementById("f-date").value){formSelectedTheme=val;renderFormThemeChips(modalTargetDate);}
+  render();
+}
+function clearModalTheme() {
+  const themes=loadThemes();
+  delete themes[modalTargetDate];
+  saveThemes(themes);
+  document.getElementById("theme-modal").classList.remove("open");
+  if(modalTargetDate===document.getElementById("f-date").value){formSelectedTheme="";renderFormThemeChips(modalTargetDate);}
+  render();
+}
+
+// ---- Canvas Donut ----
+function drawDonut(canvasId,slices,size) {
+  const canvas=document.getElementById(canvasId);
+  if(!canvas) return;
+  const dpr=window.devicePixelRatio||1;
+  canvas.width=size*dpr; canvas.height=size*dpr;
+  canvas.style.width=size+"px"; canvas.style.height=size+"px";
+  const ctx=canvas.getContext("2d");
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,size,size);
+  const total=slices.reduce((s,d)=>s+d.value,0);
+  const cx=size/2,cy=size/2,outerR=size/2-6,innerR=outerR*0.54,gap=0.018;
+  if(total===0){
+    ctx.beginPath();ctx.arc(cx,cy,outerR,0,2*Math.PI);ctx.fillStyle="#f5eaea";ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy,innerR,0,2*Math.PI);ctx.fillStyle="#fff";ctx.fill();
+    ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#c4a0a0";ctx.font="13px 'Noto Sans JP'";
+    ctx.fillText("データなし",cx,cy);return;
+  }
+  const active=slices.filter(d=>d.value>0);
+  let angle=-Math.PI/2;
+  active.forEach(d=>{
+    const sweep=(d.value/total)*2*Math.PI;
+    const hg=active.length>1?gap/2:0;
+    const start=angle+hg,end=angle+sweep-hg;
+    ctx.beginPath();
+    ctx.moveTo(cx+innerR*Math.cos(start),cy+innerR*Math.sin(start));
+    ctx.arc(cx,cy,outerR,start,end);
+    ctx.arc(cx,cy,innerR,end,start,true);
+    ctx.closePath();ctx.fillStyle=d.color;ctx.fill();
+    angle+=sweep;
+  });
+  ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillStyle="#b09090";ctx.font=`${Math.round(size*0.058)}px 'Noto Sans JP'`;
+  ctx.fillText("合計",cx,cy-size*0.055);
+  ctx.fillStyle="#5a4040";ctx.font=`bold ${Math.round(size*0.068)}px 'Noto Sans JP'`;
+  ctx.fillText(total.toLocaleString()+"円",cx,cy+size*0.055);
+}
+
+// ---- Render ----
+function render() {
+  const entries=loadEntries();
+  const themes=loadThemes();
+
+  document.getElementById("input-ym-label").textContent  =`${selYear}年 ${MONTHS_JP[selMonth]}`;
+  document.getElementById("monthly-ym-label").textContent=`${selYear}年 ${MONTHS_JP[selMonth]}`;
+  document.getElementById("yearly-y-label").textContent  =`${selYear}年`;
+
+  const monthEntries=entries.filter(e=>{
+    const d=new Date(e.date+"T00:00:00");
+    return d.getFullYear()===selYear&&d.getMonth()===selMonth;
+  });
+
+  const groups={};
+  monthEntries.forEach(e=>{(groups[e.date]=groups[e.date]||[]).push(e);});
+  const sorted=Object.entries(groups).sort(([a],[b])=>b.localeCompare(a));
+
+  document.getElementById("entry-list").innerHTML = sorted.length===0
+    ? `<div class="empty">記録がありません</div>`
+    : sorted.map(([date,items])=>{
+        const theme=themes[date]||"";
+        const themeTag=theme
+          ?`<span class="theme-tag" onclick="openThemeModal('${date}')">${theme} <span class="edit-icon">✎</span></span>`
+          :`<span class="theme-tag" style="opacity:0.4;border-style:dashed" onclick="openThemeModal('${date}')">テーマ追加 ＋</span>`;
+        return `<div class="date-group">
+          <div class="date-header">
+            <span class="date-label">${fmtDate(date)}</span>
+            ${themeTag}
+          </div>
+          ${items.map(e=>{
+            const cat=getCat(e.category);
+            return `<div class="entry-row" onclick="openEditModal(${e.id})">
+              <span class="cat-badge" style="background:${cat.color}22;color:${cat.color}">${cat.label}</span>
+              <span class="entry-memo">${e.memo||""}</span>
+              <span class="entry-amount">¥${e.amount.toLocaleString()}</span>
+              <span class="edit-btn">✎</span>
+            </div>`;
+          }).join("")}
+        </div>`;
+      }).join("");
+
+  const monthTotal=monthEntries.reduce((s,e)=>s+e.amount,0);
+  const inputTR=document.getElementById("input-total-row");
+  if(sorted.length>0){inputTR.style.display="flex";document.getElementById("input-total-amt").textContent=`¥${monthTotal.toLocaleString()}`;}
+  else{inputTR.style.display="none";}
+
+  // MONTHLY
+  const catMonthly=CATEGORIES.map(cat=>({...cat,value:monthEntries.filter(e=>e.category===cat.id).reduce((s,e)=>s+e.amount,0)})).filter(c=>c.value>0).sort((a,b)=>b.value-a.value);
+  drawDonut("monthly-pie",catMonthly,200);
+  document.getElementById("monthly-legend").innerHTML=catMonthly.length===0?`<div class="empty">データがありません</div>`:catMonthly.map(c=>{
+    const pct=monthTotal>0?Math.round(c.value/monthTotal*100):0;
+    return `<div class="legend-row"><div class="legend-dot" style="background:${c.color}"></div><span class="legend-label">${c.label}</span><span class="legend-amt">¥${c.value.toLocaleString()}</span><span class="legend-pct">${pct}%</span></div>`;
+  }).join("");
+  const mTR=document.getElementById("monthly-total-row");
+  if(catMonthly.length>0){mTR.style.display="flex";document.getElementById("monthly-total-amt").textContent=`¥${monthTotal.toLocaleString()}`;}else{mTR.style.display="none";}
+
+  // YEARLY
+  const yearEntries=entries.filter(e=>new Date(e.date+"T00:00:00").getFullYear()===selYear);
+  const yearTotal=yearEntries.reduce((s,e)=>s+e.amount,0);
+  const catYearly=CATEGORIES.map(cat=>({...cat,value:yearEntries.filter(e=>e.category===cat.id).reduce((s,e)=>s+e.amount,0)})).filter(c=>c.value>0).sort((a,b)=>b.value-a.value);
+  drawDonut("yearly-pie",catYearly,220);
+  document.getElementById("yearly-legend").innerHTML=catYearly.length===0?`<div class="empty">データがありません</div>`:catYearly.map(c=>{
+    const pct=yearTotal>0?Math.round(c.value/yearTotal*100):0;
+    return `<div class="legend-row"><div class="legend-dot" style="background:${c.color}"></div><span class="legend-label">${c.label}</span><span class="legend-amt">¥${c.value.toLocaleString()}</span><span class="legend-pct">${pct}%</span></div>`;
+  }).join("");
+  const yTR=document.getElementById("yearly-total-row");
+  if(catYearly.length>0){yTR.style.display="flex";document.getElementById("yearly-total-label").textContent=`${selYear}年 合計`;document.getElementById("yearly-total-amt").textContent=`¥${yearTotal.toLocaleString()}`;}else{yTR.style.display="none";}
+
+  const ymCard=document.getElementById("yearly-months-card");
+  if(yearEntries.length>0){
+    ymCard.style.display="block";
+    document.getElementById("yearly-months").innerHTML=MONTHS_JP.map((m,i)=>{
+      const amt=yearEntries.filter(e=>new Date(e.date+"T00:00:00").getMonth()===i).reduce((s,e)=>s+e.amount,0);
+      const pct=yearTotal>0?amt/yearTotal*100:0;
+      return `<div class="month-bar-row"><div class="month-bar-head"><span class="month-bar-name">${m}</span><span class="month-bar-amt" style="color:${amt>0?'#5a4040':'#d4b8b8'}">${amt>0?'¥'+amt.toLocaleString():'—'}</span></div><div class="month-bar-track"><div class="month-bar-fill" style="width:${pct}%"></div></div></div>`;
+    }).join("");
+  }else{ymCard.style.display="none";}
+}
+
+render();
+</script>
+</body>
+</html>
