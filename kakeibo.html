@@ -65,7 +65,6 @@
   }
   .success.show { display: block; }
 
-  /* THEME CHIPS */
   .theme-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
   .theme-chip {
     padding: 6px 14px; border-radius: 20px; border: 1.5px solid #e8d0d0;
@@ -84,7 +83,6 @@
     color: #c47e7e; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;
   }
 
-  /* MONTH NAV */
   .ym-row { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
   .ym-btn {
     background: #fbeaea; border: none; color: #c47e7e;
@@ -92,7 +90,6 @@
   }
   .ym-label { flex: 1; text-align: center; font-weight: 800; font-size: 15px; color: #5a4040; }
 
-  /* DATE GROUP */
   .date-group { margin-bottom: 16px; }
   .date-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .date-label { font-size: 12px; color: #b09090; }
@@ -119,7 +116,6 @@
   .del-btn:active { color: #c47e7e; }
   .empty { text-align: center; color: #c8b0b0; font-size: 13px; padding: 28px 0; }
 
-  /* MODALS */
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(60,30,30,0.35);
     display: flex; align-items: flex-end; justify-content: center;
@@ -135,7 +131,6 @@
   .modal-overlay.open .modal { transform: translateY(0); }
   .modal-title { font-size: 15px; font-weight: 800; color: #8a4f4f; margin-bottom: 16px; }
 
-  /* THEME MODAL */
   .modal-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
   .modal-chip {
     padding: 8px 16px; border-radius: 20px; border: 1.5px solid #e8d0d0;
@@ -159,7 +154,6 @@
     font-size: 13px; font-weight: 700; cursor: pointer;
   }
 
-  /* EDIT ENTRY MODAL */
   .edit-modal-form .form-row { margin-bottom: 12px; }
   .edit-modal-btns { display: flex; gap: 10px; margin-top: 16px; }
   .edit-save-btn {
@@ -176,7 +170,6 @@
     color: #c47e7e; font-size: 14px; font-weight: 700; cursor: pointer;
   }
 
-  /* TOTALS */
   .total-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f0dada; padding-top: 12px; margin-top: 8px; }
   .total-label { font-size: 14px; color: #b09090; }
   .total-amt { font-size: 20px; font-weight: 900; color: #c47e7e; }
@@ -213,8 +206,6 @@
   </div>
 
   <div class="content">
-
-    <!-- INPUT VIEW -->
     <div id="view-input" class="view active">
       <div class="card">
         <div class="section-title">新しい支出を追加</div>
@@ -269,7 +260,6 @@
       </div>
     </div>
 
-    <!-- MONTHLY VIEW -->
     <div id="view-monthly" class="view">
       <div class="card">
         <div class="ym-row">
@@ -286,7 +276,6 @@
       </div>
     </div>
 
-    <!-- YEARLY VIEW -->
     <div id="view-yearly" class="view">
       <div class="card">
         <div class="ym-row">
@@ -362,6 +351,14 @@
 </div>
 
 <script>
+// Service Worker登録
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .catch(err => console.log('SW registration failed:', err));
+  });
+}
+
 const CATEGORIES = [
   { id: "food",          label: "🍱 食費",       color: "#d4887c" },
   { id: "transport",     label: "🚃 交通費",     color: "#88b09c" },
@@ -389,9 +386,8 @@ let selYear  = today.getFullYear();
 let selMonth = today.getMonth();
 let formSelectedTheme = "";
 let modalTargetDate = "";
-let editingId = null; // 編集中の支出ID
+let editingId = null;
 
-// ---- Storage ----
 function loadEntries() { try { return JSON.parse(localStorage.getItem("kakeibo_entries")||"[]"); } catch{return[];} }
 function saveEntries(arr) { localStorage.setItem("kakeibo_entries", JSON.stringify(arr)); }
 function loadThemes() { try { return JSON.parse(localStorage.getItem("kakeibo_themes")||"{}"); } catch{return{};} }
@@ -401,7 +397,6 @@ function fmtDate(str) {
   return new Date(str+"T00:00:00").toLocaleDateString("ja-JP",{month:"long",day:"numeric",weekday:"short"});
 }
 
-// ---- Init ----
 const initDate = today.toISOString().split("T")[0];
 document.getElementById("f-date").value = initDate;
 renderFormThemeChips(initDate);
@@ -446,7 +441,6 @@ function applyCustomTheme() {
   render();
 }
 
-// ---- View ----
 function switchView(v) {
   document.querySelectorAll(".view").forEach(el=>el.classList.remove("active"));
   document.getElementById("view-"+v).classList.add("active");
@@ -458,7 +452,6 @@ function nextMonth() { if(selMonth===11){selYear++;selMonth=0;}else selMonth++; 
 function prevYear() { selYear--; render(); }
 function nextYear() { selYear++; render(); }
 
-// ---- Add ----
 function addEntry() {
   const date   = document.getElementById("f-date").value;
   const cat    = document.getElementById("f-cat").value;
@@ -476,7 +469,6 @@ function addEntry() {
   render();
 }
 
-// ---- Edit Entry Modal ----
 function openEditModal(id) {
   const entry = loadEntries().find(e=>e.id===id);
   if (!entry) return;
@@ -487,13 +479,11 @@ function openEditModal(id) {
   document.getElementById("edit-memo").value   = entry.memo || "";
   document.getElementById("edit-modal").classList.add("open");
 }
-
 function closeEditModal(e) {
   if (e && e.target !== document.getElementById("edit-modal")) return;
   document.getElementById("edit-modal").classList.remove("open");
   editingId = null;
 }
-
 function saveEdit() {
   const date   = document.getElementById("edit-date").value;
   const cat    = document.getElementById("edit-cat").value;
@@ -508,7 +498,6 @@ function saveEdit() {
   editingId = null;
   render();
 }
-
 function deleteFromEdit() {
   if (!editingId) return;
   if (!confirm("この支出を削除しますか？")) return;
@@ -518,7 +507,6 @@ function deleteFromEdit() {
   render();
 }
 
-// ---- Theme Modal ----
 function openThemeModal(date) {
   modalTargetDate = date;
   const themes = loadThemes();
@@ -561,7 +549,6 @@ function clearModalTheme() {
   render();
 }
 
-// ---- Canvas Donut ----
 function drawDonut(canvasId,slices,size) {
   const canvas=document.getElementById(canvasId);
   if(!canvas) return;
@@ -599,11 +586,9 @@ function drawDonut(canvasId,slices,size) {
   ctx.fillText(total.toLocaleString()+"円",cx,cy+size*0.055);
 }
 
-// ---- Render ----
 function render() {
   const entries=loadEntries();
   const themes=loadThemes();
-
   document.getElementById("input-ym-label").textContent  =`${selYear}年 ${MONTHS_JP[selMonth]}`;
   document.getElementById("monthly-ym-label").textContent=`${selYear}年 ${MONTHS_JP[selMonth]}`;
   document.getElementById("yearly-y-label").textContent  =`${selYear}年`;
@@ -612,7 +597,6 @@ function render() {
     const d=new Date(e.date+"T00:00:00");
     return d.getFullYear()===selYear&&d.getMonth()===selMonth;
   });
-
   const groups={};
   monthEntries.forEach(e=>{(groups[e.date]=groups[e.date]||[]).push(e);});
   const sorted=Object.entries(groups).sort(([a],[b])=>b.localeCompare(a));
@@ -625,10 +609,7 @@ function render() {
           ?`<span class="theme-tag" onclick="openThemeModal('${date}')">${theme} <span class="edit-icon">✎</span></span>`
           :`<span class="theme-tag" style="opacity:0.4;border-style:dashed" onclick="openThemeModal('${date}')">テーマ追加 ＋</span>`;
         return `<div class="date-group">
-          <div class="date-header">
-            <span class="date-label">${fmtDate(date)}</span>
-            ${themeTag}
-          </div>
+          <div class="date-header"><span class="date-label">${fmtDate(date)}</span>${themeTag}</div>
           ${items.map(e=>{
             const cat=getCat(e.category);
             return `<div class="entry-row" onclick="openEditModal(${e.id})">
@@ -646,7 +627,6 @@ function render() {
   if(sorted.length>0){inputTR.style.display="flex";document.getElementById("input-total-amt").textContent=`¥${monthTotal.toLocaleString()}`;}
   else{inputTR.style.display="none";}
 
-  // MONTHLY
   const catMonthly=CATEGORIES.map(cat=>({...cat,value:monthEntries.filter(e=>e.category===cat.id).reduce((s,e)=>s+e.amount,0)})).filter(c=>c.value>0).sort((a,b)=>b.value-a.value);
   drawDonut("monthly-pie",catMonthly,200);
   document.getElementById("monthly-legend").innerHTML=catMonthly.length===0?`<div class="empty">データがありません</div>`:catMonthly.map(c=>{
@@ -656,7 +636,6 @@ function render() {
   const mTR=document.getElementById("monthly-total-row");
   if(catMonthly.length>0){mTR.style.display="flex";document.getElementById("monthly-total-amt").textContent=`¥${monthTotal.toLocaleString()}`;}else{mTR.style.display="none";}
 
-  // YEARLY
   const yearEntries=entries.filter(e=>new Date(e.date+"T00:00:00").getFullYear()===selYear);
   const yearTotal=yearEntries.reduce((s,e)=>s+e.amount,0);
   const catYearly=CATEGORIES.map(cat=>({...cat,value:yearEntries.filter(e=>e.category===cat.id).reduce((s,e)=>s+e.amount,0)})).filter(c=>c.value>0).sort((a,b)=>b.value-a.value);
