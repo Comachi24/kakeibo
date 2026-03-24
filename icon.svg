@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- 背景 -->
+  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#f5dada"/>
+      <stop offset="100%" stop-color="#e8c4c4"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 耳（左） -->
+  <polygon points="130,200 165,100 220,195" fill="#e8a0a0"/>
+  <polygon points="148,195 170,125 210,192" fill="#f5c8c8"/>
+
+  <!-- 耳（右） -->
+  <polygon points="382,200 347,100 292,195" fill="#e8a0a0"/>
+  <polygon points="364,195 342,125 302,192" fill="#f5c8c8"/>
+
+  <!-- 顔の丸 -->
+  <ellipse cx="256" cy="290" rx="145" ry="135" fill="#fff5f5"/>
+
+  <!-- 目（左） -->
+  <ellipse cx="205" cy="265" rx="22" ry="24" fill="#5a3535"/>
+  <ellipse cx="211" cy="259" rx="7" ry="7" fill="#fff"/>
+  <!-- 目（右） -->
+  <ellipse cx="307" cy="265" rx="22" ry="24" fill="#5a3535"/>
+  <ellipse cx="313" cy="259" rx="7" ry="7" fill="#fff"/>
+
+  <!-- まつげ（左） -->
+  <line x1="185" y1="248" x2="175" y2="238" stroke="#5a3535" stroke-width="4" stroke-linecap="round"/>
+  <line x1="203" y1="243" x2="200" y2="231" stroke="#5a3535" stroke-width="4" stroke-linecap="round"/>
+  <!-- まつげ（右） -->
+  <line x1="327" y1="248" x2="337" y2="238" stroke="#5a3535" stroke-width="4" stroke-linecap="round"/>
+  <line x1="309" y1="243" x2="312" y2="231" stroke="#5a3535" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- 鼻 -->
+  <ellipse cx="256" cy="298" rx="11" ry="8" fill="#e8a0b0"/>
+
+  <!-- 口 -->
+  <path d="M246,308 Q256,322 266,308" stroke="#c47e7e" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <line x1="256" y1="306" x2="256" y2="312" stroke="#c47e7e" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- ほっぺ（左） -->
+  <ellipse cx="185" cy="305" rx="28" ry="16" fill="#f5c0c0" opacity="0.6"/>
+  <!-- ほっぺ（右） -->
+  <ellipse cx="327" cy="305" rx="28" ry="16" fill="#f5c0c0" opacity="0.6"/>
+
+  <!-- ひげ（左） -->
+  <line x1="240" y1="300" x2="155" y2="290" stroke="#c4a0a0" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="240" y1="305" x2="155" y2="305" stroke="#c4a0a0" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="240" y1="310" x2="155" y2="320" stroke="#c4a0a0" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+  <!-- ひげ（右） -->
+  <line x1="272" y1="300" x2="357" y2="290" stroke="#c4a0a0" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="272" y1="305" x2="357" y2="305" stroke="#c4a0a0" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+  <line x1="272" y1="310" x2="357" y2="320" stroke="#c4a0a0" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+
+  <!-- 小さなリボン -->
+  <polygon points="235,355 256,368 256,368" fill="#a8c4a8"/>
+  <polygon points="277,355 256,368 256,368" fill="#88aa88"/>
+  <ellipse cx="256" cy="355" rx="13" ry="10" fill="#c4dac0"/>
+
+  <!-- 家計簿テキスト帯 -->
+  <rect x="60" y="390" width="392" height="72" rx="36" fill="#c47e7e"/>
+  <text x="256" y="440" text-anchor="middle" font-family="'Hiragino Kaku Gothic Pro', 'Noto Sans JP', sans-serif" font-size="42" font-weight="900" fill="#fff" letter-spacing="6">家計簿</text>
+</svg>
